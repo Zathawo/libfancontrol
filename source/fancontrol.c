@@ -182,6 +182,7 @@ void FanControllerThreadFunction(void*)
             WriteLog("fanControllerSetRotationSpeedLevel error");
             diagAbortWithResult(MAKERESULT(Module_Libnx, LibnxError_ShouldNotHappen));
         }
+        svcSleepThread(100'000'000);
     }
 
     tsSessionClose(&ts_session);
