@@ -1,4 +1,5 @@
 #include "fancontrol.h"
+#include "tmp451.h"
 
 //Fan curve table
 const TemperaturePoint defaultTable[] =
@@ -116,20 +117,11 @@ void InitFanController(TemperaturePoint *table)
 
 void FanControllerThreadFunction(void*)
 {
-    TsSession ts_session;
-    float temperatureC_f = 0;
-
     FanController fc;
     float fanLevelSet_f = 0;
+    float temperatureC_f = 0;
 
-    Result rs = tsOpenSession(&ts_session, TsDeviceCode_LocationExternal);
-    if(R_FAILED(rs))
-    {
-        WriteLog("Error opening tsSession");
-        diagAbortWithResult(MAKERESULT(Module_Libnx, LibnxError_ShouldNotHappen));
-    }
-
-    rs = fanOpenController(&fc, 0x3D000001);
+    Result rs = fanOpenController(&fc, 0x3D000001);
     if(R_FAILED(rs))
     {
         WriteLog("Error opening fanController");
@@ -138,7 +130,7 @@ void FanControllerThreadFunction(void*)
 
     while(!fanControllerThreadExit)
     {
-        rs = tsSessionGetTemperature(&ts_session, &temperatureC_f);
+        rs = Tmp451GetSocTemp(&temperatureC_f);
         if(R_FAILED(rs))
         {
             WriteLog("tsSessionGetTemperature error");
@@ -185,7 +177,6 @@ void FanControllerThreadFunction(void*)
         svcSleepThread(100000000); //100'000'000
     }
 
-    tsSessionClose(&ts_session);
     fanControllerClose(&fc);
 }
 
